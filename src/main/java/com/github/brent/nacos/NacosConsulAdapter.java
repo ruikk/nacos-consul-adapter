@@ -31,7 +31,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableAsync
-public class MyApplication {
+public class NacosConsulAdapter{
 
 	public static void main(String[] args) {
 		SpringApplication.run(MyApplication.class, args);
