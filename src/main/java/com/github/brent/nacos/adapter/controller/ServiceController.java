@@ -78,6 +78,16 @@ public class ServiceController {
 		});
 	}
 
+	@GetMapping(value = "/v1/health/service/{appName}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public Single<ResponseEntity<List<Map<String, Object>>>> getHealth(@PathVariable("appName") String appName,
+			@RequestParam(name = QUERY_PARAM_WAIT, required = false) String wait,
+			@RequestParam(name = QUERY_PARAM_INDEX, required = false) Long index) {
+		Assert.isTrue(appName != null, "service name can not be null");
+		return registrationService.getHealth(appName, getWaitMillis(wait), index).map(item -> {
+			return createResponseEntity(item.getItem(), item.getChangeIndex());
+		});
+	}
+
 	private MultiValueMap<String, String> createHeaders(long index) {
 		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 		headers.add(CONSUL_IDX_HEADER, "" + index);
