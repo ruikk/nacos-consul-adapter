@@ -86,12 +86,56 @@ public class RegistrationService {
 					ipObj.put("ServiceID", instance.getHost() + ":" + instance.getPort());
 					ipObj.put("ServicePort", instance.getPort());
 					ipObj.put("NodeMeta", Collections.emptyMap());
-					Map<String, String> metaJo = new HashMap<String, String>();
-					metaJo.put("management.port", "" + instance.getPort());
-					ipObj.put("ServiceMeta", metaJo);
-					ipObj.put("ServiceTags", Collections.emptyList());
+					ipObj.put("ServiceMeta", instance.getMetadata());
+					ipObj.put("ServiceTags", Collections.singletonList("secure="+ instance.isSecure()));
 
 					list.add(ipObj);
+				}
+				return list;
+			}
+		});
+	}
+
+	public Single<ChangeItem<List<Map<String, Object>>>> getHealth(String appName, long waitMillis, Long index) {
+		return returnDeferred(waitMillis, index, () -> {
+			List<ServiceInstance> instances = discoveryClient.getInstances(appName);
+			List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+
+			if (instances == null) {
+				return Collections.emptyList();
+			} else {
+				Set<ServiceInstance> instSet = new HashSet<ServiceInstance>(instances);
+				for (ServiceInstance instance : instSet) {
+					Map<String, Object> obj = new HashMap<String, Object>();
+					String id = instance.getServiceId() + "-" +instance.getHost() + ":" + instance.getPort();
+
+					Map<String, Object> nodeObj = new HashMap<String, Object>();
+					nodeObj.put("Address", instance.getHost());
+					nodeObj.put("Node", instance.getServiceId());
+					nodeObj.put("Meta", instance.getMetadata());
+					obj.put("Node", nodeObj);
+
+					Map<String, Object> serviceObj = new HashMap<String, Object>();
+					serviceObj.put("Address", instance.getHost());
+					serviceObj.put("Service", instance.getServiceId());
+					serviceObj.put("ID", id);
+					serviceObj.put("Port", instance.getPort());
+					serviceObj.put("Meta", instance.getMetadata());
+					serviceObj.put("Tags", Collections.singletonList("secure="+ instance.isSecure()));
+					obj.put("Service", serviceObj);
+
+					Map<String, Object> checksObj = new HashMap<String, Object>();
+					checksObj.put("Node", instance.getServiceId());
+					checksObj.put("Name", "Service '" + instance.getServiceId() + "' check");
+					checksObj.put("CheckID", "service:" + instance.getHost() + ":" + instance.getPort());
+					checksObj.put("Status", "passing");
+
+					checksObj.put("ServiceID", id);
+					checksObj.put("ServiceName", instance.getServiceId());
+					checksObj.put("ServiceTags", Collections.singletonList("secure="+ instance.isSecure()));
+
+					obj.put("Checks", Collections.singletonList(checksObj));
+					list.add(obj);
 				}
 				return list;
 			}
