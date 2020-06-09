@@ -77,15 +77,17 @@ public class RegistrationService {
 			} else {
 				Set<ServiceInstance> instSet = new HashSet<ServiceInstance>(instances);
 				for (ServiceInstance instance : instSet) {
+					String id = instance.getServiceId() + "-" +instance.getHost() + ":" + instance.getPort();
+
 					Map<String, Object> ipObj = new HashMap<String, Object>();
 
 					ipObj.put("Address", instance.getHost());
 					ipObj.put("Node", instance.getServiceId());
 					ipObj.put("ServiceAddress", instance.getHost());
 					ipObj.put("ServiceName", instance.getServiceId());
-					ipObj.put("ServiceID", instance.getHost() + ":" + instance.getPort());
+					ipObj.put("ServiceID", id);
 					ipObj.put("ServicePort", instance.getPort());
-					ipObj.put("NodeMeta", Collections.emptyMap());
+					ipObj.put("NodeMeta", instance.getMetadata());
 					ipObj.put("ServiceMeta", instance.getMetadata());
 					ipObj.put("ServiceTags", Collections.singletonList("secure="+ instance.isSecure()));
 
@@ -127,7 +129,7 @@ public class RegistrationService {
 					Map<String, Object> checksObj = new HashMap<String, Object>();
 					checksObj.put("Node", instance.getServiceId());
 					checksObj.put("Name", "Service '" + instance.getServiceId() + "' check");
-					checksObj.put("CheckID", "service:" + instance.getHost() + ":" + instance.getPort());
+					checksObj.put("CheckID", "service:" + id);
 					checksObj.put("Status", "passing");
 
 					checksObj.put("ServiceID", id);
